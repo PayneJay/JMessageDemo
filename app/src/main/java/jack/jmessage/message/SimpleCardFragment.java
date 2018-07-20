@@ -83,11 +83,14 @@ public class SimpleCardFragment extends Fragment implements SwipeRefreshLayout.O
 
     @Override
     public void onRefresh() {
-        mData.clear();
+        mSwipeLayout.setRefreshing(true);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                mData.addAll(getData(10));
+                mData.addAll(getData(5));
+                mAdapter.setData(mData);
+                mAdapter.notifyDataSetChanged();
+                mSwipeLayout.setRefreshing(false);
             }
         }, 1500);
     }

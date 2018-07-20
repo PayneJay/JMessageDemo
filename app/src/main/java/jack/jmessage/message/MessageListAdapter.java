@@ -27,13 +27,17 @@ import jack.jmessage.message.models.MsgItemBean;
  */
 
 public class MessageListAdapter extends Adapter {
-    private final Context mContext;
-    private final List<MsgItemBean> mData = new ArrayList<>();
+    private Context mContext;
+    private List<MsgItemBean> mData = new ArrayList<>();
 
     public MessageListAdapter(Context context, List<MsgItemBean> data) {
         mContext = context;
         mData.clear();
         mData.addAll(data);
+    }
+
+    public void setData(List<MsgItemBean> mData) {
+        this.mData = mData;
     }
 
     @NonNull

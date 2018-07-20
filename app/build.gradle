@@ -55,5 +55,6 @@ dependencies {
     compile 'cn.jiguang.imui:chatinput:0.7.3'
 
     implementation 'com.github.bumptech.glide:glide:4.0.0'
+    implementation 'pub.devrel:easypermissions:1.2.0'
 //    implementation 'com.github.PayneJay:swipe-refresh-recyclerview:1.0-release'
 }

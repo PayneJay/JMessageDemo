@@ -1,5 +1,6 @@
 package jack.jmessage.message;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,11 +14,13 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,6 +38,7 @@ import com.bumptech.glide.request.transition.Transition;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -43,6 +47,7 @@ import cn.jiguang.imui.chatinput.listener.OnCameraCallbackListener;
 import cn.jiguang.imui.chatinput.listener.OnMenuClickListener;
 import cn.jiguang.imui.chatinput.listener.RecordVoiceListener;
 import cn.jiguang.imui.chatinput.model.FileItem;
+import cn.jiguang.imui.chatinput.model.VideoItem;
 import cn.jiguang.imui.commons.ImageLoader;
 import cn.jiguang.imui.commons.models.IMessage;
 import cn.jiguang.imui.messages.MessageList;
@@ -59,6 +64,7 @@ import jack.jmessage.message.models.DefaultUser;
 import jack.jmessage.message.models.MyMessage;
 import jack.jmessage.utils.ViewFindUtils;
 import jack.jmessage.widget.ChatView;
+import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * ================================================
@@ -88,7 +94,7 @@ public class ConversationActivity extends AppCompatActivity implements View.OnTo
     private PowerManager mPowerManager;
     private PowerManager.WakeLock mWakeLock;
     /**
-     * Store all image messages' path, pass it to {@link },
+     * Store all image messages' path, pass it to {@link BrowserImageActivity},
      * so that click image message can browser all images.
      */
     private ArrayList<String> mPathList = new ArrayList<>();
@@ -371,6 +377,15 @@ public class ConversationActivity extends AppCompatActivity implements View.OnTo
         }
     }
 
+    private void scrollToBottom() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mChatView.getMessageListView().smoothScrollToPosition(0);
+            }
+        }, 200);
+    }
+
     private void initView() {
         View decorView = getWindow().getDecorView();
         final PullToRefreshLayout ptrLayout = ViewFindUtils.find(decorView, id.pull_to_refresh_layout);
@@ -407,37 +422,124 @@ public class ConversationActivity extends AppCompatActivity implements View.OnTo
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
+//        scrollToBottom();
         return false;
     }
 
     @Override
     public boolean onSendTextMessage(CharSequence input) {
-        return false;
+        return sendText(input);
     }
 
     @Override
     public void onSendFiles(List<FileItem> list) {
-
+        sendFiles(list);
     }
 
     @Override
     public boolean switchToMicrophoneMode() {
-        return false;
+        scrollToBottom();
+        String[] perms = new String[]{
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+
+        if (!EasyPermissions.hasPermissions(this, perms)) {
+            EasyPermissions.requestPermissions(this,
+                    getResources().getString(R.string.rationale_record_voice),
+                    RC_RECORD_VOICE, perms);
+        }
+        return true;
     }
 
     @Override
     public boolean switchToGalleryMode() {
-        return false;
+        scrollToBottom();
+        String[] perms = new String[]{
+                Manifest.permission.READ_EXTERNAL_STORAGE
+        };
+
+        if (!EasyPermissions.hasPermissions(this, perms)) {
+            EasyPermissions.requestPermissions(this,
+                    getResources().getString(R.string.rationale_photo),
+                    RC_PHOTO, perms);
+        }
+        // If you call updateData, select photo view will try to update data(Last update over 30 seconds.)
+//        mChatView.getChatInputView().getSelectPhotoView().updateData();
+        return true;
     }
 
     @Override
     public boolean switchToCameraMode() {
-        return false;
+        scrollToBottom();
+        String[] perms = new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
+        };
+
+        if (!EasyPermissions.hasPermissions(this, perms)) {
+            EasyPermissions.requestPermissions(this,
+                    getResources().getString(R.string.rationale_camera),
+                    RC_CAMERA, perms);
+        } else {
+            File rootDir = getFilesDir();
+            String fileDir = rootDir.getAbsolutePath() + "/photo";
+            mChatView.setCameraCaptureFile(fileDir, new SimpleDateFormat("yyyy-MM-dd-hhmmss",
+                    Locale.getDefault()).format(new Date()));
+        }
+        return true;
     }
 
     @Override
     public boolean switchToEmojiMode() {
-        return false;
+        scrollToBottom();
+        return true;
+    }
+
+    private void sendFiles(List<FileItem> list) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+
+        MyMessage message;
+        for (FileItem item : list) {
+            if (item.getType() == FileItem.Type.Image) {
+                message = new MyMessage(null, IMessage.MessageType.SEND_IMAGE.ordinal());
+                mPathList.add(item.getFilePath());
+                mMsgIdList.add(message.getMsgId());
+            } else if (item.getType() == FileItem.Type.Video) {
+                message = new MyMessage(null, IMessage.MessageType.SEND_VIDEO.ordinal());
+                message.setDuration(((VideoItem) item).getDuration());
+
+            } else {
+                throw new RuntimeException("Invalid FileItem type. Must be Type.Image or Type.Video");
+            }
+
+            message.setTimeString(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date()));
+            message.setMediaFilePath(item.getFilePath());
+            message.setUserInfo(new DefaultUser("1", "Ironman", "R.drawable.ironman"));
+
+            final MyMessage fMsg = message;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mAdapter.addToStart(fMsg, true);
+                }
+            });
+        }
+    }
+
+    private boolean sendText(CharSequence input) {
+        if (input.length() == 0) {
+            return false;
+        }
+        MyMessage message = new MyMessage(input.toString(), IMessage.MessageType.SEND_TEXT.ordinal());
+        message.setUserInfo(new DefaultUser("1", "Ironman", "R.drawable.ironman"));
+        message.setTimeString(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date()));
+        message.setMessageStatus(IMessage.MessageStatus.SEND_GOING);
+        mAdapter.addToStart(message, true);
+        return true;
     }
 
     @Override
@@ -467,16 +569,40 @@ public class ConversationActivity extends AppCompatActivity implements View.OnTo
 
     @Override
     public void onTakePictureCompleted(String photoPath) {
-
+        final MyMessage message = new MyMessage(null, IMessage.MessageType.SEND_IMAGE.ordinal());
+        message.setTimeString(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date()));
+        message.setMediaFilePath(photoPath);
+        mPathList.add(photoPath);
+        mMsgIdList.add(message.getMsgId());
+        message.setUserInfo(new DefaultUser("1", "Ironman", "R.drawable.ironman"));
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.addToStart(message, true);
+            }
+        });
     }
 
     @Override
     public void onStartVideoRecord() {
-
+        // set voice file path, after recording, audio file will save here
+        String path = Environment.getExternalStorageDirectory().getPath() + "/voice";
+        File destDir = new File(path);
+        if (!destDir.exists()) {
+            destDir.mkdirs();
+        }
+        mChatView.setRecordVoiceFile(destDir.getPath(), DateFormat.format("yyyy-MM-dd-hhmmss",
+                Calendar.getInstance(Locale.CHINA)) + "");
     }
 
     @Override
     public void onFinishVideoRecord(String videoPath) {
+        MyMessage message = new MyMessage(null, IMessage.MessageType.SEND_VOICE.ordinal());
+        message.setUserInfo(new DefaultUser("1", "Ironman", "R.drawable.ironman"));
+        message.setMediaFilePath(videoPath);
+//        message.setDuration(duration);
+        message.setTimeString(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date()));
+        mAdapter.addToStart(message, true);
 
     }
 
