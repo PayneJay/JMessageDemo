@@ -48,6 +48,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".message.ConversationActivity" />
+        <activity android:name=".message.VideoActivity" />
+        <activity android:name=".message.BrowserImageActivity" />
 
         <!-- Required SDK 核心功能-->
         <!-- 可配置android:process参数将PushService放在其他进程中 -->

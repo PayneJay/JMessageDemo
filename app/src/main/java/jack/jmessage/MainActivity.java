@@ -52,11 +52,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        for (int i = 0; i < mTitles.length; i++) {
-            mFragments.add(SimpleCardFragment.getInstance("Switch ViewPager " + mTitles[i]));
-            mTabEntities.add(new TabEntity(mTitles[i], mIconSelectIds[i], mIconUnselectIds[i]));
-        }
-
         mDecorView = getWindow().getDecorView();
         mViewPager = ViewFindUtils.find(mDecorView, R.id.view_pager);
         mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
@@ -143,6 +138,10 @@ public class MainActivity extends AppCompatActivity {
     private class MyPagerAdapter extends FragmentPagerAdapter {
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
+            for (int i = 0; i < mTitles.length; i++) {
+                mFragments.add(SimpleCardFragment.getInstance("Switch ViewPager " + mTitles[i]));
+                mTabEntities.add(new TabEntity(mTitles[i], mIconSelectIds[i], mIconUnselectIds[i]));
+            }
         }
 
         @Override
