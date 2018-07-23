@@ -23,7 +23,7 @@ import java.util.Random;
 import cn.jpush.im.android.api.JMessageClient;
 import cn.jpush.im.api.BasicCallback;
 import jack.jmessage.entity.TabEntity;
-import jack.jmessage.message.SimpleCardFragment;
+import jack.jmessage.message.MessageListFragment;
 import jack.jmessage.utils.ViewFindUtils;
 
 public class MainActivity extends AppCompatActivity {
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
             for (int i = 0; i < mTitles.length; i++) {
-                mFragments.add(SimpleCardFragment.getInstance("Switch ViewPager " + mTitles[i]));
+                mFragments.add(MessageListFragment.getInstance("Switch ViewPager " + mTitles[i]));
                 mTabEntities.add(new TabEntity(mTitles[i], mIconSelectIds[i], mIconUnselectIds[i]));
             }
         }

@@ -6,10 +6,13 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,17 +46,20 @@ public class MessageListAdapter extends Adapter {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        TextView textView = new TextView(mContext);
-        textView.setBackgroundColor(mContext.getResources().getColor(R.color.colorAccent));
-
-        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 200);
-        textView.setLayoutParams(lp);
-        return new ItemViewHolder(textView);
+        View inflate = LayoutInflater.from(mContext).inflate(R.layout.item_message_list_layout, parent, false);
+        return new ItemViewHolder(inflate);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ((TextView) holder.itemView).setText(mData.get(position).getMessage());
+        if (holder instanceof ItemViewHolder) {
+            ((ItemViewHolder) holder).sdvAvatar.setImageURI(mData.get(position).getAvatarUrl());
+            ((ItemViewHolder) holder).tvMsg.setText(mData.get(position).getMessage());
+            ((ItemViewHolder) holder).tvDate.setText(mData.get(position).getTimeStamp());
+            ((ItemViewHolder) holder).tvNickName.setText(mData.get(position).getNickName());
+            ((ItemViewHolder) holder).tvUnRead.setText(mData.get(position).getUnRead() + "");
+
+        }
         holder.itemView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -70,8 +76,20 @@ public class MessageListAdapter extends Adapter {
     }
 
     private class ItemViewHolder extends ViewHolder {
+        public SimpleDraweeView sdvAvatar;
+        public TextView tvUnRead;
+        public TextView tvNickName;
+        public TextView tvDate;
+        public TextView tvMsg;
+
         public ItemViewHolder(View itemView) {
             super(itemView);
+
+            sdvAvatar = itemView.findViewById(R.id.msg_item_sdv_avatar);
+            tvUnRead = itemView.findViewById(R.id.msg_item_tv_unread);
+            tvNickName = itemView.findViewById(R.id.msg_item_tv_nickname);
+            tvDate = itemView.findViewById(R.id.msg_item_tv_date);
+            tvMsg = itemView.findViewById(R.id.msg_item_tv_message);
         }
     }
 }

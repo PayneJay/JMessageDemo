@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RoundImageView"></declare-styleable>
+    <declare-styleable name="RoundImageView_type"></declare-styleable>
+    <declare-styleable name="RoundImageView_radius"></declare-styleable>
+</resources>

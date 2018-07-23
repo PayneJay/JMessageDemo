@@ -2,6 +2,8 @@ package jack.jmessage;
 
 import android.app.Application;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+
 import cn.jpush.im.android.api.JMessageClient;
 
 /**
@@ -21,5 +23,6 @@ public class IMDebugApplication extends Application {
         super.onCreate();
         JMessageClient.setDebugMode(true);
         JMessageClient.init(this);
+        Fresco.initialize(this);
     }
 }

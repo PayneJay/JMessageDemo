@@ -18,6 +18,7 @@ import java.util.List;
 import jack.jmessage.R;
 import jack.jmessage.message.models.MsgItemBean;
 import jack.jmessage.utils.ViewFindUtils;
+import jack.jmessage.widget.RecycleViewDivider;
 
 /**
  * ================================================
@@ -28,15 +29,15 @@ import jack.jmessage.utils.ViewFindUtils;
  * date: 2018/7/20.
  */
 
-public class SimpleCardFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class MessageListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private String mTitle;
     private SwipeRefreshLayout mSwipeLayout;
     private RecyclerView mRecyclerView;
     private MessageListAdapter mAdapter;
     private List<MsgItemBean> mData = new ArrayList<>();
 
-    public static SimpleCardFragment getInstance(String title) {
-        SimpleCardFragment sf = new SimpleCardFragment();
+    public static MessageListFragment getInstance(String title) {
+        MessageListFragment sf = new MessageListFragment();
         sf.mTitle = title;
         return sf;
     }
@@ -65,6 +66,8 @@ public class SimpleCardFragment extends Fragment implements SwipeRefreshLayout.O
         lm.setOrientation(OrientationHelper.VERTICAL);
         mRecyclerView.setLayoutManager(lm);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addItemDecoration(new RecycleViewDivider(
+                getActivity(), LinearLayoutManager.VERTICAL, 20, getResources().getColor(R.color.divide_transpant_color)));
         mAdapter = new MessageListAdapter(getActivity(), getData(5));
         mRecyclerView.setAdapter(mAdapter);
     }

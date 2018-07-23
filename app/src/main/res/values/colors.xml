@@ -9,4 +9,9 @@
     <color name="google_blue">#FF375BF1</color>
     <color name="google_yellow">#FFF7D23E</color>
     <color name="google_green">#FF34A350</color>
+    <color name="color_white">#FFFFFF</color>
+    <color name="font_color_DDDDDD">#DDDDDD</color>
+    <color name="font_color_202020">#202020</color>
+    <color name="font_color_B0B0B0">#B0B0B0</color>
+    <color name="divide_transpant_color">#00FFFFFF</color>
 </resources>
